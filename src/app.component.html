@@ -1,0 +1,203 @@
+<div class="bg-slate-100 min-h-screen font-sans flex flex-col">
+  <!-- Header -->
+  <header class="bg-white shadow-sm sticky top-0 z-20">
+    <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+      <div class="flex items-center space-x-3">
+        <i class="fas fa-rocket text-2xl text-indigo-600"></i>
+        <h1 class="text-2xl font-bold text-slate-800">Online App Maker</h1>
+      </div>
+      <button class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors">
+        Download
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="flex-grow container mx-auto p-6 flex flex-col lg:flex-row gap-8">
+    
+    <!-- Left Panel: Controls -->
+    <div class="w-full lg:w-1/2 bg-white rounded-xl shadow-lg p-8 space-y-8">
+      <!-- Step Indicator -->
+      <div class="flex items-center justify-between">
+        @for (step of [1, 2, 3]; track step; let i = $index) {
+          <div class="flex items-center">
+            <div class="flex items-center" [class.cursor-pointer]="currentStep() > step" (click)="currentStep.set(step)">
+              <div class="rounded-full h-8 w-8 flex items-center justify-center transition-colors"
+                [class.bg-indigo-600]="currentStep() >= step"
+                [class.text-white]="currentStep() >= step"
+                [class.bg-slate-200]="currentStep() < step"
+                [class.text-slate-500]="currentStep() < step">
+                {{ step }}
+              </div>
+              <span class="ml-3 font-semibold"
+                [class.text-indigo-600]="currentStep() >= step"
+                [class.text-slate-500]="currentStep() < step">
+                @switch (step) {
+                  @case (1) { App Details }
+                  @case (2) { App Maker }
+                  @case (3) { Finish }
+                }
+              </span>
+            </div>
+            @if (i < 2) {
+              <div class="flex-auto border-t-2 transition-colors mx-4"
+                [class.border-indigo-600]="currentStep() > step"
+                [class.border-slate-200]="currentStep() <= step">
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- Step Content -->
+      <div class="pt-4">
+        @switch (currentStep()) {
+          @case (1) {
+            <div class="space-y-6 animate-fade-in">
+              <h2 class="text-xl font-semibold text-slate-700">1. Let's start with the basics</h2>
+              <div>
+                <label for="appName" class="block text-sm font-medium text-slate-600 mb-1">App Name</label>
+                <input id="appName" type="text" [value]="appName()" (input)="handleAppNameInput($event)" placeholder="Enter your app name"
+                  class="w-full px-4 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-slate-600 mb-1">App Logo (Optional)</label>
+                <div class="mt-1 flex items-center space-x-4">
+                  <span class="inline-block h-16 w-16 rounded-md overflow-hidden bg-slate-100 flex items-center justify-center border">
+                    @if (appLogo()) {
+                      <img [src]="appLogo()" alt="App Logo Preview" class="h-full w-full object-cover">
+                    } @else {
+                      <i class="fa fa-image text-3xl text-slate-400"></i>
+                    }
+                  </span>
+                  <label for="logo-upload" class="cursor-pointer bg-white py-2 px-3 border border-gray-300 rounded-md shadow-sm text-sm leading-4 font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    <span>Upload a file</span>
+                    <input id="logo-upload" name="logo-upload" type="file" class="sr-only" accept="image/png, image/jpeg" (change)="handleLogoUpload($event)">
+                  </label>
+                </div>
+                <p class="text-xs text-slate-500 mt-2">PNG or JPG. Recommended size: 512x512px.</p>
+              </div>
+              <div class="flex justify-end pt-4">
+                <button (click)="nextStep()" [disabled]="!isStep1Valid()"
+                  class="px-6 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:bg-slate-300 disabled:cursor-not-allowed transition-colors">
+                  Next Step
+                </button>
+              </div>
+            </div>
+          }
+          @case (2) {
+            <div class="space-y-6 animate-fade-in">
+              <h2 class="text-xl font-semibold text-slate-700">2. What's your app's source?</h2>
+              <!-- Source Type Selection -->
+              <div class="grid grid-cols-3 gap-4">
+                <button (click)="selectSourceType('url')" class="p-4 border rounded-md text-center transition-all" [class.bg-indigo-50]="sourceType() === 'url'" [class.border-indigo-500]="sourceType() === 'url'" [class.ring-2]="sourceType() === 'url'" [class.ring-indigo-300]="sourceType() === 'url'">
+                  <i class="fa fa-link text-2xl mb-2 text-indigo-600"></i><span class="font-semibold block">From URL</span>
+                </button>
+                <button (click)="selectSourceType('html')" class="p-4 border rounded-md text-center transition-all" [class.bg-indigo-50]="sourceType() === 'html'" [class.border-indigo-500]="sourceType() === 'html'" [class.ring-2]="sourceType() === 'html'" [class.ring-indigo-300]="sourceType() === 'html'">
+                  <i class="fa fa-code text-2xl mb-2 text-indigo-600"></i><span class="font-semibold block">Single HTML</span>
+                </button>
+                <button (click)="selectSourceType('multipage')" class="p-4 border rounded-md text-center transition-all" [class.bg-indigo-50]="sourceType() === 'multipage'" [class.border-indigo-500]="sourceType() === 'multipage'" [class.ring-2]="sourceType() === 'multipage'" [class.ring-indigo-300]="sourceType() === 'multipage'">
+                  <i class="fa fa-folder-open text-2xl mb-2 text-indigo-600"></i><span class="font-semibold block">Multi-page</span>
+                </button>
+              </div>
+              <!-- Source Input -->
+              <div>
+                @if (sourceType() === 'url') {
+                  <label for="appUrl" class="block text-sm font-medium text-slate-600 mb-1">Website URL</label>
+                  <input id="appUrl" type="url" [value]="appUrl()" (input)="handleUrlInput($event)" placeholder="https://example.com" class="w-full px-4 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
+                }
+                @if (sourceType() === 'html') {
+                  <label for="htmlContent" class="block text-sm font-medium text-slate-600 mb-1">HTML Code</label>
+                  <textarea id="htmlContent" [value]="htmlContent()" (input)="handleHtmlInput($event)" rows="6" placeholder="<p>Hello, World!</p>" class="w-full px-4 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition font-mono text-sm"></textarea>
+                }
+                @if (sourceType() === 'multipage') {
+                  <label class="block text-sm font-medium text-slate-600 mb-1">Upload Files</label>
+                  <label for="multipage-upload" class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md cursor-pointer hover:border-indigo-500">
+                    <div class="space-y-1 text-center">
+                      <i class="fa fa-cloud-upload-alt text-4xl text-slate-400"></i>
+                      <div class="flex text-sm text-gray-600">
+                        <span class="relative bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500">
+                          <span>Choose files</span>
+                          <input id="multipage-upload" type="file" class="sr-only" multiple (change)="handleMultiPageFiles($event)">
+                        </span>
+                        <p class="pl-1">or drag and drop</p>
+                      </div>
+                      <p class="text-xs text-gray-500">{{ multiPageFileNames() }}</p>
+                    </div>
+                  </label>
+                }
+              </div>
+              
+              <!-- Monetization Section -->
+              <hr class="border-slate-200">
+              <div class="space-y-3">
+                <h3 class="text-lg font-semibold text-slate-700">Monetization (Optional)</h3>
+                 <div class="relative flex items-start">
+                  <div class="flex items-center h-5">
+                    <input id="enable-ads" aria-describedby="enable-ads-description" name="enable-ads" type="checkbox" [checked]="enableAds()" (change)="toggleEnableAds()" class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded">
+                  </div>
+                  <div class="ml-3 text-sm">
+                    <label for="enable-ads" class="font-medium text-gray-700">Enable Ads</label>
+                    <p id="enable-ads-description" class="text-gray-500">Inject ad script into your app's header.</p>
+                  </div>
+                </div>
+                @if(enableAds()) {
+                  <div class="animate-fade-in-fast">
+                     <label for="adScript" class="block text-sm font-medium text-slate-600 mb-1">Ad Script Code</label>
+                     <textarea id="adScript" [value]="adScript()" (input)="handleAdScriptInput($event)" rows="5" placeholder="Paste your ad script code here (e.g., from Monetag or Adsterra)" class="w-full px-4 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition font-mono text-sm"></textarea>
+                  </div>
+                }
+              </div>
+
+              <div class="flex justify-between pt-4">
+                <button (click)="prevStep()" class="px-6 py-2 bg-slate-200 text-slate-700 rounded-md hover:bg-slate-300 transition-colors">Back</button>
+                <button (click)="nextStep()" [disabled]="!isStep2Valid()" class="px-6 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:bg-slate-300 disabled:cursor-not-allowed transition-colors">Next Step</button>
+              </div>
+            </div>
+          }
+          @case (3) {
+            <div class="text-center space-y-6 animate-fade-in">
+              <div class="mx-auto bg-green-100 rounded-full h-20 w-20 flex items-center justify-center">
+                <i class="fas fa-check text-4xl text-green-600"></i>
+              </div>
+              <h2 class="text-2xl font-semibold text-slate-800">You're all set!</h2>
+              <p class="text-slate-600">Your app is ready to be downloaded. Click the button below to get your HTML file.</p>
+              <div class="flex justify-center pt-4 space-x-4">
+                <button (click)="prevStep()" class="px-6 py-3 bg-slate-200 text-slate-700 rounded-md hover:bg-slate-300 transition-colors">Back</button>
+                <button (click)="downloadApp()" class="px-8 py-3 bg-green-600 text-white font-bold rounded-md hover:bg-green-700 transition-colors shadow-lg">
+                  <i class="fas fa-download mr-2"></i>Download App
+                </button>
+              </div>
+            </div>
+          }
+        }
+      </div>
+    </div>
+
+    <!-- Right Panel: Phone Simulator -->
+    <div class="w-full lg:w-1/2 flex items-center justify-center">
+      <div class="w-[360px] h-[740px] bg-white rounded-[40px] shadow-2xl p-4 border-4 border-slate-800">
+        <div class="w-full h-full bg-slate-100 rounded-[24px] overflow-hidden relative">
+          <div class="absolute top-0 left-0 right-0 h-6 bg-slate-800 flex justify-center items-center">
+             <div class="w-20 h-4 bg-black rounded-b-lg"></div>
+          </div>
+          <div class="w-full h-full pt-6">
+            @if (previewContent()) {
+                @if (sourceType() === 'url') {
+                    <iframe [src]="previewContent()" class="w-full h-full border-none" title="App Preview"></iframe>
+                } @else {
+                    <iframe [srcdoc]="previewContent()" class="w-full h-full border-none" title="App Preview"></iframe>
+                }
+            } @else {
+              <div class="w-full h-full flex flex-col items-center justify-center text-center p-4">
+                <i class="fas fa-eye text-5xl text-slate-400 mb-4"></i>
+                <h3 class="font-semibold text-slate-600">App Preview</h3>
+                <p class="text-sm text-slate-500">Your app will be displayed here.</p>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
